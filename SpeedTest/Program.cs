@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using IOEx;
 
 namespace SpeedTest
@@ -16,10 +12,10 @@ namespace SpeedTest
             var filename = @"D:\Passwords\testfiles\cred-sort-unique.txt";
             //if (args[0] == "x")
             //{
-                FileStreamEx(filename);
+                //FileStream(filename);
             //}
             //else 
-            //    FileStream(filename);
+                FileStreamEx(filename);
         }
 
         static void FileStreamEx(string filename)
@@ -27,15 +23,19 @@ namespace SpeedTest
             Console.WriteLine("FileStreamEx");
             var sw = new Stopwatch();
             sw.Start();
+            var count = 0;
             using (var reader = new FileStreamEx(filename))
             {
                 Line line;
-                while ((line = reader.ReadLineAsync().Result) != null)
+                while ((line = reader.ReadLine()) != null)
                 {
+                    count++;
                     //var x = line.Text;
                 }
             }
             sw.Stop();
+            Console.WriteLine($"Count: {count:N0}");
+            Console.WriteLine($"Lines per sec: {count/sw.ElapsedMilliseconds * 1000}");
             Console.WriteLine("Time: " + sw.ElapsedMilliseconds);
         }
 
@@ -47,9 +47,9 @@ namespace SpeedTest
             using (var reader = new StreamReader(filename))
             {
                 var line = "";
-                while ((line = reader.ReadLineAsync().Result) != null)
+                while ((line = reader.ReadLine()) != null)
                 {
-                    //var x = line;
+                    var x = line;
                 }
             }
             sw.Stop();

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
 namespace IOEx
 {
@@ -7,13 +8,15 @@ namespace IOEx
         private int _startPosition;
         private int _endPosition;
 
-        public Line(byte[] buffer)
+
+        public Line(char[] charBuffer)
         {
-            Buffer = buffer;
+            this.CharBuffer = charBuffer;
         }
 
-        internal byte[] Buffer { get; set; }
+        internal char[] CharBuffer { get; set; }
 
+        internal string BigAssString { get; set; }
         /// <summary>
         /// The byte position within the file where this line begins
         /// </summary>
@@ -49,11 +52,17 @@ namespace IOEx
 
         public int Length { get; set; }
 
-        public string Text => Encoding.UTF8.GetString(this.Buffer, this.StartBufferPosition, this.Length);
+        public string Text
+        {
+            get
+            {
+                //charLen = this.Decoder.GetChars(this.Buffer, this.StartBufferPosition, this.Length, this.Buffer,0);
 
-        ///// <summary>
-        ///// The number of bytes that can be read given the current
-        ///// </summary>
-        //internal int ReadCapacity { get; set; }
+                //return this.BigAssString.Substring(this.StartBufferPosition, this.Length);
+                return new String(this.CharBuffer, this.StartBufferPosition, this.Length);
+                //return Encoding.ASCII.GetString(this.Buffer, this.StartBufferPosition, this.Length);
+                //return Encoding.UTF8.GetString(this.Buffer, this.StartBufferPosition, this.Length);
+            }
+        }
     }
 }
