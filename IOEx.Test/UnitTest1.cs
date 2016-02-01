@@ -55,22 +55,6 @@ namespace IOEx.Test
             Console.WriteLine("Time: " + sw.ElapsedMilliseconds);
         }
 
-        [TestMethod]
-        public void SmallFile()
-        {
-            var sw = new Stopwatch();
-            sw.Start();
-            using (var reader = new FileStreamEx(@"D:\dev\git.private\DumpManager\Sort.Test\smalltext.txt"))
-            {
-                Line line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    var x = line.Text;
-                }
-            }
-            sw.Stop();
-            Console.WriteLine("Time: " + sw.ElapsedMilliseconds);
-        }
 
         [TestMethod]
         public void When_reading_file_with_medium_Lines_and_large_buffer_matches_result_of_streamreader()
@@ -113,23 +97,6 @@ namespace IOEx.Test
                         var fileStreamText = line.Text;
                         Assert.AreEqual(streamText, fileStreamText);
                     }
-                }
-            }
-            sw.Stop();
-            Console.WriteLine("Time: " + sw.ElapsedMilliseconds);
-        }
-
-        [TestMethod]
-        public void LargeFileStandardWay()
-        {
-            var sw = new Stopwatch();
-            sw.Start();
-            using (var reader = new StreamReader(@"D:\dev\git.private\DumpManager\Sort.Test\largetext.txt"))
-            {
-                var line = "";
-                while ((line = reader.ReadLineAsync().Result) != null)
-                {
-                    var x = line;
                 }
             }
             sw.Stop();
