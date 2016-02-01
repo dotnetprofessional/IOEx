@@ -81,7 +81,9 @@
     <Content Include="ChangeLog.txt" />
     <Content Include="Data\LargeLineFile.txt" />
     <Content Include="Data\MediumLineFile.txt" />
+    <Content Include="Data\SingleLineEndingWithSpace.txt" />
     <Content Include="Data\SingleLine.txt" />
+    <Content Include="Data\SingleLineWithoutReturn.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

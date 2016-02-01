@@ -25,6 +25,8 @@ namespace IOEx
 
         internal bool DecodingBuffer { get; set; }
 
+        public bool EOF { get; private set; }
+
         public FileStreamEx(string filename) : this(filename, 1024 * 1024)
         {
 
@@ -158,6 +160,13 @@ namespace IOEx
                 }
             }
 
+            if (this.EOF)
+            {
+                this.InternalLine.StartPosition = this.BufferPosition;
+                this.InternalLine.EndPosition = this.BufferAvailable;
+                this.BufferAvailable = 0;
+                return true;
+            }
             return false;
         }
 
@@ -169,6 +178,8 @@ namespace IOEx
             this.InternalLine.FilePosition += this.BufferAvailable;
             // Read the next chunk of data from file, preserving any buffer data before the BufferReadOffset
             var bytesRead = this.InternalReader.Read(this.ByteBuffer, 0, this.BufferSize);
+            this.EOF = bytesRead == 0;
+
             if (this.Encoding == null)
             {
                 this.SetEncoding();

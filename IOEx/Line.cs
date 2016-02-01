@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace IOEx
@@ -27,6 +28,8 @@ namespace IOEx
             {
                 _startPosition = value;
                 this.StartBufferPosition = value - this.FilePosition;
+                if (this.StartBufferPosition < 0)
+                    this.StartBufferPosition = 0;
             }
         }
 
@@ -56,13 +59,32 @@ namespace IOEx
         {
             get
             {
-                //charLen = this.Decoder.GetChars(this.Buffer, this.StartBufferPosition, this.Length, this.Buffer,0);
-
-                //return this.BigAssString.Substring(this.StartBufferPosition, this.Length);
                 return new String(this.CharBuffer, this.StartBufferPosition, this.Length);
-                //return Encoding.ASCII.GetString(this.Buffer, this.StartBufferPosition, this.Length);
-                //return Encoding.UTF8.GetString(this.Buffer, this.StartBufferPosition, this.Length);
             }
         }
+
+        public List<Line> Split(char s)
+        {
+            var parts = new List<Line>();
+            var line = new Line(this.CharBuffer);
+            // Set the first part details
+            line.StartPosition = this.StartBufferPosition;
+
+            for (int i = this.StartBufferPosition; i < this.StartBufferPosition + this.Length; i++)
+            {
+                var c = this.CharBuffer[i];
+                if (c == s)
+                {
+                    line.EndPosition = i;
+                    parts.Add(line);
+                    line = new Line(this.CharBuffer);
+                    line.StartPosition = i + 1;
+                }
+            }
+            parts.Add(line);
+            line.EndPosition = this.EndPosition;
+            return parts;
+        }
+
     }
 }
