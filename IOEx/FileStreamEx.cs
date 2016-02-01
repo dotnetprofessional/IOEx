@@ -36,14 +36,12 @@ namespace IOEx
             this.BufferSize = bufferSize;
             this.ByteBuffer = new byte[this.BufferSize];
             this.Buffer = new char[this.BufferSize * 2];
-            this.Encoding = Encoding.UTF8;
-            this.Decoder = Encoding.GetDecoder();
 
             // Don't open a Stream before checking for invalid arguments,
             // or we'll create a FileStream on disk and we won't close it until
             // the finalizer runs, causing problems for applications.
-            if (this.Filename == null || this.Encoding == null)
-                throw new ArgumentNullException((this.Filename == null ? "filename" : "encoding"));
+            if (this.Filename == null)
+                throw new ArgumentNullException("filename");
             if (this.Filename.Length == 0)
                 throw new ArgumentException("Unknown filename.");
             //if (this.BufferSize <= 1024)
@@ -171,7 +169,14 @@ namespace IOEx
             this.InternalLine.FilePosition += this.BufferAvailable;
             // Read the next chunk of data from file, preserving any buffer data before the BufferReadOffset
             var bytesRead = this.InternalReader.Read(this.ByteBuffer, 0, this.BufferSize);
-            this.DecodeBuffer(bytesRead);
+            if (this.Encoding == null)
+            {
+                this.SetEncoding();
+                this.DecodeBuffer(bytesRead);
+                this.EncodingMarkerLength = 0;
+            }
+            else
+                this.DecodeBuffer(bytesRead);
         }
 
         void DecodeBuffer(int bytesRead)
@@ -179,13 +184,12 @@ namespace IOEx
             if (this.DecodingBuffer)
                 throw new Exception("Decoding already true!!!");
 
-            if(this.BufferReadOffset > this.BufferSize)
+            if (this.BufferReadOffset > this.BufferSize)
                 throw new ArgumentException($"Lines in this file exceed the buffer size of {this.BufferSize}, try using a larger buffer for this file.");
 
             // Now process the buffer array into decoded chars that can be consumed
             int firstPassBytesToConsume = Math.Min(bytesRead, this.BufferSize) / 2;
-            var charLen = this.Decoder.GetChars(this.ByteBuffer, 0, firstPassBytesToConsume, this.Buffer,
-                this.BufferReadOffset);
+            var charLen = this.Decoder.GetChars(this.ByteBuffer, this.EncodingMarkerLength, firstPassBytesToConsume - this.EncodingMarkerLength, this.Buffer, this.BufferReadOffset);
 
             this.BufferPosition = 0;
             this.BufferAvailable = charLen + this.BufferReadOffset;
@@ -201,9 +205,43 @@ namespace IOEx
             });
         }
 
+        public int EncodingMarkerLength { get; set; }
+
         public void Dispose()
         {
             this.InternalReader?.Dispose();
+        }
+        void SetEncoding()
+        {
+            if (this.ByteBuffer[0] == 0xFE && this.ByteBuffer[1] == 0xFF)
+            {
+                // Big Endian Unicode
+
+                this.Encoding = new UnicodeEncoding(true, true);
+                this.EncodingMarkerLength = 2;
+            }
+
+            else if (this.ByteBuffer[0] == 0xFF && this.ByteBuffer[1] == 0xFE)
+            {
+                // Little Endian Unicode, or possibly little endian UTF32
+                if (this.ByteBuffer[2] != 0 || this.ByteBuffer[3] != 0)
+                {
+                    this.Encoding = new UnicodeEncoding(false, true);
+                    this.EncodingMarkerLength = 2;
+                }
+            }
+
+            else if (this.ByteBuffer[0] == 0xEF && this.ByteBuffer[1] == 0xBB && this.ByteBuffer[2] == 0xBF)
+            {
+                // UTF-8
+                this.Encoding = Encoding.UTF8;
+                this.EncodingMarkerLength = 3;
+            }
+            else
+            {
+                this.Encoding = Encoding.UTF8;
+            }
+            this.Decoder = Encoding.GetDecoder();
         }
     }
 }
