@@ -30,6 +30,7 @@ namespace SpeedTest
                 while ((line = reader.ReadLine()) != null)
                 {
                     count++;
+                    var cols = line.Split('\t');
                     //var x = line.Text;
                 }
             }

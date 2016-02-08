@@ -16,6 +16,8 @@ namespace IOEx
 
         protected FileStream InternalReader { get; set; }
 
+        protected bool BufferEndedWithReturn { get; set; }
+
         protected byte[] ByteBuffer { get; set; }
         protected char[] Buffer { get; set; }
 
@@ -86,7 +88,7 @@ namespace IOEx
                 {
                     this.DelayCount++;
                     Task.Delay(5); // Wait 5 ms and try again
-                    Console.WriteLine("Delay " + this.DelayCount);
+                    //Console.WriteLine("Delay A" + this.DelayCount);
                     return this.ReadLine();
                 }
 
@@ -105,7 +107,7 @@ namespace IOEx
                 {
                     this.DelayCount++;
                     Task.Delay(5); // Wait 5 ms and try again
-                    Console.WriteLine("Delay " + this.DelayCount);
+                    //Console.WriteLine("Delay B" + this.DelayCount);
                     return this.ReadLine();
                 }
                 this.DelayCount = 0;
@@ -143,8 +145,15 @@ namespace IOEx
             {
                 if (buffer[i] == '\n' || buffer[i] == '\r')
                 {
+                    if (this.BufferEndedWithReturn && buffer[i] == '\n')
+                    {
+                        this.BufferPosition++;
+                        continue;
+                    }
+                    this.BufferEndedWithReturn = false;
+
                     this.InternalLine.StartPosition = this.InternalLine.FilePosition + this.BufferPosition;
-                    this.InternalLine.EndPosition = i + this.InternalLine.FilePosition;
+                    this.InternalLine.EndPosition = i + this.InternalLine.FilePosition; 
 
                     if (this.BufferAvailable > i + 1)
                     {
@@ -155,9 +164,15 @@ namespace IOEx
                     i++; // consumes the control character without outputting it
 
                     this.BufferPosition = i;
-
+                    if (this.BufferPosition == this.BufferAvailable)
+                    {
+                        // Seems the last character in the buffer was a line terminator. Need to know this for the next
+                        // buffer as a line terminator can have to parts and the second part might be in the next buffer
+                        this.BufferEndedWithReturn = true;
+                    }
                     return true;
                 }
+                this.BufferEndedWithReturn = false;
             }
 
             if (this.EOF)
@@ -165,6 +180,7 @@ namespace IOEx
                 this.InternalLine.StartPosition = this.BufferPosition;
                 this.InternalLine.EndPosition = this.BufferAvailable;
                 this.BufferAvailable = 0;
+                this.BufferPosition = this.BufferAvailable;
                 return true;
             }
             return false;

@@ -68,7 +68,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="FileStreamExTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -81,6 +81,7 @@
     <Content Include="ChangeLog.txt" />
     <Content Include="Data\LargeLineFile.txt" />
     <Content Include="Data\MediumLineFile.txt" />
+    <Content Include="Data\ThreeLinesWIthSeondEmpty.txt" />
     <Content Include="Data\SingleLineEndingWithSpace.txt" />
     <Content Include="Data\SingleLine.txt" />
     <Content Include="Data\SingleLineWithoutReturn.txt" />

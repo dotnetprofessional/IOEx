@@ -15,9 +15,8 @@ namespace IOEx
             this.CharBuffer = charBuffer;
         }
 
-        internal char[] CharBuffer { get; set; }
+        public char[] CharBuffer { get; set; }
 
-        internal string BigAssString { get; set; }
         /// <summary>
         /// The byte position within the file where this line begins
         /// </summary>
@@ -57,10 +56,7 @@ namespace IOEx
 
         public string Text
         {
-            get
-            {
-                return new String(this.CharBuffer, this.StartBufferPosition, this.Length);
-            }
+            get { return new String(this.CharBuffer, this.StartBufferPosition, this.Length); }
         }
 
         public List<Line> Split(char s)
@@ -82,9 +78,91 @@ namespace IOEx
                 }
             }
             parts.Add(line);
-            line.EndPosition = this.EndPosition;
+            line.EndPosition = this.StartBufferPosition + this.Length;
             return parts;
         }
 
+
+        public bool StartsWith(params char[] chars)
+        {
+            foreach(var c in chars)
+                if (this.CharBuffer[this.StartBufferPosition] == c)
+                    return true;
+
+            return false;
+        }
+
+        public bool EndsWith(params char[] chars)
+        {
+            var len = this.StartBufferPosition + this.Length -1;
+            foreach (var c in chars)
+                if (this.CharBuffer[len] == c)
+                    return true;
+
+            return false;
+        }
+
+        public Line Strip(params char[] chars)
+        {
+            var count = 0;
+            var result = new char[this.Length];
+            for (int i = this.StartBufferPosition; i < this.StartBufferPosition + this.Length; i++)
+            {
+                var found = false;
+                var c = this.CharBuffer[i];
+                foreach (var v in chars)
+                {
+                    if (v == c)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    result[count] = c;
+                    count++;
+                }
+
+            }
+
+            var line = new Line(result);
+            line.StartPosition = 0;
+            line.EndPosition = count;
+            return line;
+        }
+
+        public bool Contains(params char[] chars)
+        {
+            for (int i = this.StartBufferPosition; i < this.StartBufferPosition + this.Length; i++)
+            {
+                var found = false;
+                var c = this.CharBuffer[i];
+                foreach (var v in chars)
+                {
+                    if (v == c)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public bool IsNullOrEmpty()
+        {
+            if (this.Length == 0)
+                return true;
+
+            for (int i = this.StartBufferPosition; i < this.StartBufferPosition + this.Length; i++)
+            {
+                if (this.CharBuffer[i] != ' ')
+                    return false;
+            }
+
+            return true;
+        }
     }
 }
